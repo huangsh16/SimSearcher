@@ -11,20 +11,7 @@ using namespace std;
 const int SUCCESS = 0;
 const int FAILURE = 1;
 #define BUFSIZE 1000000
-
-char buf[BUFSIZE], *pt = buf + BUFSIZE, *pend = buf + BUFSIZE;
-#define read() \
-do{ \
-if (pt >= pend) { \
-pt = buf; fread(buf, 1, BUFSIZE, file); } } while(0)
-
-
-#define scan_str(s) \
-{ int p = 0; \
-read(); \
-//while (*pt < '0' || *pt > '9') {pt++; read();} \
-while (*pt != '\n') {s[p++] = (*(pt ++)); read();}  \
-s[p] = '\0'; }
+#define STRSIZE 300
 
 struct TrieNode{
 	TrieNode* child[128];
