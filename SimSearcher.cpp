@@ -1,8 +1,6 @@
 #include "SimSearcher.h"
 #include <cstdlib>
 
-using namespace std;
-
 SimSearcher::SimSearcher()
 {
 }
@@ -13,8 +11,13 @@ SimSearcher::~SimSearcher()
 
 int SimSearcher::createIndex(const char *filename, unsigned q)
 {
-	char buf[1024];
-	FILE* 
+	FILE *file = fopen(filename, "r+");
+	if(file == NULL) return FAILURE;
+	char str[256];
+	while(1) {
+		str = scan_str();
+		printf("%s", str);
+	}
 	return SUCCESS;
 }
 
