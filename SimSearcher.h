@@ -6,17 +6,22 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <string>
 using namespace std;
 
 const int SUCCESS = 0;
 const int FAILURE = 1;
 #define BUFSIZE 1000000
 #define STRSIZE 300
+const int INF = (int)1e9;
 
 struct TrieNode{
 	TrieNode* child[128];
 	vector<int> indexVector;
-	TrieNode() {}
+	TrieNode() {
+		for(int i = 0; i < 128; ++i)
+			child[i] = NULL;
+	}
 };
 
 struct Trie
@@ -49,7 +54,23 @@ struct Trie
 class SimSearcher
 {
 public:
+	int qGram;
+	int lineId;
 	Trie edTrie;
+	int searchTimes;
+	int *appearTimes;
+	int *isAppear;
+	char *buf;
+	vector<string> strVector;
+	vector<int> strSizeVector;
+	int dp[STRSIZE][STRSIZE];
+
+	vector<vector<int>* > indexVectorVector;
+	vector<pair<int, int> > indexVectorLen;
+
+	void InitIndexVectorVectorWithEdTrie(const char *query, int len);
+	int ComputeEd(const char* str1, int m, const char* str2, int n, int threshold);
+
 	SimSearcher();
 	~SimSearcher();
 

@@ -1,2 +1,3 @@
+rm main.exe
 make
-main.exe sample.txt >a.txt
+main.exe sample.txt
