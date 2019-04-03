@@ -7,11 +7,13 @@
 #include <cmath>
 #include <cstring>
 #include <string>
+#include <ctime>
+#include <fstream>
 using namespace std;
 
 const int SUCCESS = 0;
 const int FAILURE = 1;
-#define BUFSIZE 1000000
+#define BUFSIZE 100000000
 #define STRSIZE 300
 const int INF = (int)1e9;
 
@@ -33,9 +35,9 @@ struct Trie
 	void Insert(const char* str, int len, int lineId) {
 		TrieNode* nowNode = root;
 		for (int i = 0; i < len; ++i) {
-			if(nowNode -> child[str[i]] == NULL) 
-				nowNode -> child[str[i]] = new TrieNode();
-			nowNode = nowNode -> child[str[i]];
+			if(nowNode -> child[(int)str[i]] == NULL) 
+				nowNode -> child[(int)str[i]] = new TrieNode();
+			nowNode = nowNode -> child[(int)str[i]];
 		}
 		if(nowNode -> indexVector.empty() || *(nowNode -> indexVector.end() - 1) != lineId)
 			nowNode -> indexVector.push_back(lineId);
@@ -43,9 +45,9 @@ struct Trie
 	vector<int>* Search(const char* str, int len) {
 		TrieNode* nowNode = root;
 		for(int i = 0; i < len; ++i) {
-			if(nowNode -> child[str[i]] == NULL)
+			if(nowNode -> child[(int)str[i]] == NULL)
 				return NULL;
-			nowNode = nowNode -> child[str[i]];
+			nowNode = nowNode -> child[(int)str[i]];
 		}
 		return &(nowNode -> indexVector);
 	}

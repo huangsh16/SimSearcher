@@ -4,6 +4,7 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
+	time_t st = clock();
 	SimSearcher searcher;
 
 	vector<pair<unsigned, unsigned> > resultED;
@@ -14,18 +15,26 @@ int main(int argc, char **argv)
 
 	searcher.createIndex(argv[1], q);
 
+
 	freopen(argv[2], "r", stdin);
-	freopen(argv[3], "w", stdout);
+	//freopen(argv[3], "w", stdout);
 
 	string str;
 	int t;
-	int id;
+	int id = 0;
+	//cout << id++ << endl;
 	while(cin >> str >> t) {
+		//cout << str.length() << " " << t << endl;
 		searcher.searchED(str.c_str(), (unsigned)t, resultED);
-		printf("%d:\n", id++);
-		for(auto result : resultED)
-			printf("%d %d\n", result.first, result.second);
+		//cout << id++ << endl;
+		//printf("%d:\n", id++);
+		//for(auto result : resultED)
+		//	printf("%d %d\n", result.first, result.second);
 	}
+	fclose(stdin);
+	//fclose(stdout);
+
+	cout << "alltime : " << clock() - st << endl;
 
 /*
 	searcher.createIndex(argv[1], q);

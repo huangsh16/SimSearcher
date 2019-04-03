@@ -10,19 +10,52 @@ SimSearcher::~SimSearcher()
 }
 
 #define read() do{ if (pt >= pend) { pt = buf; readSize = fread(buf, 1, BUFSIZE, file); } } while(0)
-#define Scan_str(s) { len = 0; read(); while (*pt != '\n' && *pt != '\0' && len <= 256) {s[len++] = (*(pt ++)); read();} pt++; s[len] = '\0'; }
+#define Scan_str(s) { len = 0; read(); while(*pt == '\n' || *pt == '\r'){pt++; read();} while (*pt != '\n' && *pt != '\r' && (pt - buf < readSize)) {s[len++] = (*(pt ++)); read();} s[len] = '\0'; }
 #define Abs(_) ((_) > 0 ? (_) : -(_))
 
 int SimSearcher::createIndex(const char *filename, unsigned q)
 {
-	FILE *file = fopen(filename, "r+");
+	time_t st = clock();
+	ifstream fin(filename);
+    string str;
+	lineId = 0; qGram = q;
+	char str1[STRSIZE];
+	int len;
+	while(getline(fin, str)) {
+		len = str.length();
+		str.copy(str1, len, 0);
+		*(str1 + len) = '\0';
+		for(int i = 0; i + qGram - 1 < len; ++i) {
+			edTrie.Insert(str1 + i, qGram, lineId);
+		}
+		lineId++;
+		strVector.push_back(str);
+		strSizeVector.push_back(len);
+		//cout << lineId  << " " << str << endl;
+	};
+	cout << "readtime : " << clock() - st << endl;
+	//cout << lineId << endl;
+	searchTimes = 0;
+	appearTimes = new int[lineId];
+	isAppear = new int[lineId];
+    memset(isAppear, 0, sizeof(int) * lineId);
+	return SUCCESS;
+}
+
+/*
+int SimSearcher::createIndex(const char *filename, unsigned q)
+{
+	FILE *file = fopen(filename, "rb");
 	if(file == NULL) return FAILURE;
-    buf = new char[BUFSIZE];
+	buf = new char[BUFSIZE];
 	char *pt = buf + BUFSIZE, *pend = buf + BUFSIZE, str[STRSIZE];
-	int len, readSize; 
+	int len, readSize;
 	lineId = 0; qGram = q;
 	while(1) {
 		Scan_str(str);
+		cout << lineId  << " " << str << endl;
+		if(len == 0) 
+			break;
 		for(int i = 0; i + qGram - 1 < len; ++i) {
 			edTrie.Insert(str + i, qGram, lineId);
 		}
@@ -32,27 +65,53 @@ int SimSearcher::createIndex(const char *filename, unsigned q)
         if(pt - buf >= readSize && readSize != BUFSIZE)
             break;
 	};
+	cout << lineId << endl;
+	searchTimes = 0;
+	appearTimes = new int[lineId];
+	isAppear = new int[lineId];
+    memset(isAppear, 0, sizeof(int) * lineId);
+    fclose(file);
+	return SUCCESS;
+}*/
+
+/*
+int SimSearcher::createIndex(const char *filename, unsigned q)
+{
+	FILE *file = fopen(filename, "r+");
+	if(file == NULL) return FAILURE;
+	char *pt = buf + BUFSIZE, *pend = buf + BUFSIZE, str[STRSIZE];
+	int len, readSize;
+	lineId = 0; qGram = q;
+	while(fgets(str, 260, file) != NULL) {
+		len = strlen(str);
+		if(str[len - 1] == '\n')
+			str[--len] = '\0';
+		for(int i = 0; i + qGram - 1 < len; ++i) {
+			edTrie.Insert(str + i, qGram, lineId);
+		}
+		lineId++;
+		strVector.push_back(str);
+		strSizeVector.push_back(len);
+		cout << lineId << " " << str << endl;
+	};
+	cout << lineId << endl;
 	searchTimes = 0;
 	appearTimes = new int[lineId];
 	isAppear = new int[lineId];
     memset(isAppear, 0, sizeof(int) * lineId);
 	return SUCCESS;
-}
+}*/
 
 
 void SimSearcher::InitIndexVectorVectorWithEdTrie(const char *str, int len) {
 	indexVectorVector.clear();
 	indexVectorLen.clear();
-	for(int i = 0; i + qGram - 1 < len; ++i) {
+	for(int i = 0, id = 0; i + qGram - 1 < len; ++i) {
 		vector<int>* tmp = edTrie.Search(str + i, qGram);
-		/*
-		cout << str[i] << str[i + 1] << " : ";
-		for(auto index : *tmp)
-    		cout << index << " ";
-    	cout << endl;		 
-		*/
-		indexVectorVector.push_back(tmp);
-		indexVectorLen.push_back(make_pair(tmp -> size(), i));
+		if(tmp) {
+			indexVectorVector.push_back(tmp);
+			indexVectorLen.push_back(make_pair(tmp -> size(), id++));
+		}
 	}
 	sort(indexVectorLen.begin(), indexVectorLen.end());
 }
@@ -72,6 +131,8 @@ int SimSearcher::ComputeEd(const char* str1, int m, const char* str2, int n, int
     for(int i = 1; i <= m; i++) {
         int begin = max(i - threshold, 1);
         int end = min(i + threshold, n);
+        if (begin > end)
+            break;
         for (int j = begin; j <= end; j++) {
             int t = !(str1[i - 1] == str2[j - 1]);
             int d1 = Abs(i - 1 - j) > threshold ? INF : dp[i - 1][j];
@@ -87,9 +148,12 @@ int SimSearcher::searchED(const char *query, unsigned threshold, vector<pair<uns
 	result.clear();
 	searchTimes++;
 	int query_len = strlen(query);
-    int needTimes = query_len - qGram + 1 - (int)threshold * qGram;
+    int thresholdInt = threshold > 1000000000u ? (int)1e9 : threshold;
+    //cout << thresholdInt << endl;
+    int needTimes = query_len - qGram + 1 - (int)thresholdInt * qGram;
     vector<int> shortVector, ansVector;
-
+	//cout << query << endl;
+	//cout << query_len << " " << qGram << " " << thresholdInt << endl;
     //cout << needTimes << endl;
 
     if(needTimes > 0) {
@@ -101,8 +165,11 @@ int SimSearcher::searchED(const char *query, unsigned threshold, vector<pair<uns
     		cout << endl;
     	}*/
     	int indexVectorVectorSize = indexVectorVector.size();
-    	for(int i = indexVectorVectorSize - needTimes; i >= 0; --i)
+    	//cout << indexVectorVectorSize << endl;
+    	for(int i = indexVectorVectorSize - needTimes; i >= 0; --i) {
+    		//cout << i << ":";
     		for(auto index : *indexVectorVector[indexVectorLen[i].second]) {
+    			//cout << index << " ";
     			if(isAppear[index] != searchTimes) {
     				isAppear[index] = searchTimes;
     				appearTimes[index] = 0;
@@ -110,11 +177,14 @@ int SimSearcher::searchED(const char *query, unsigned threshold, vector<pair<uns
     			}
     			appearTimes[index]++;
     		}
+    		//cout << endl;
+    	}
     	for(auto index : shortVector) {
-    		if(Abs(strSizeVector[index] - query_len) > threshold)
+    		//cout << "index " << index << endl;
+    		if(Abs(strSizeVector[index] - query_len) > thresholdInt)
     			continue;
     		int appearTimesCnt = appearTimes[index];
-    		int needTimesOfStr = query_len - qGram + 1 - (int)threshold * qGram;
+    		int needTimesOfStr = query_len - qGram + 1 - thresholdInt * qGram;
     		if(appearTimesCnt + needTimes - 1 < needTimesOfStr)
     			continue;
     		for(int i = indexVectorVectorSize - needTimes + 1; i < indexVectorVectorSize; ++i) {
@@ -141,9 +211,13 @@ int SimSearcher::searchED(const char *query, unsigned threshold, vector<pair<uns
     	for(int i = 0; i < lineId; ++i)
     		ansVector.push_back(i);
     }
+    
     for(auto index : ansVector) { 
-    	int ed = ComputeEd(strVector[index].c_str(), strSizeVector[index], query, query_len, threshold);
-    	if(ed <= threshold)
+    	//cout << "no " << index << endl; 
+    	int ed = ComputeEd(strVector[index].c_str(), strSizeVector[index], query, query_len, thresholdInt);
+    	//if(ed == 2 && index == 14)
+    	//	cout << strVector[index].c_str() << " " << query << endl;
+    	if(ed <= thresholdInt)
     		result.push_back(make_pair(index, ed));
     }
 	return SUCCESS;
