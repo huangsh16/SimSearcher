@@ -11,11 +11,11 @@ int main(int argc, char **argv)
 	vector<pair<unsigned, double> > resultJaccard;
 
 	unsigned q = 1, edThreshold = 4;
-	double jaccardThreshold = 0.85;
+	double jaccardThreshold = 0.2;
 
-	searcher.createIndex(argv[1], q);
+	//searcher.createIndex(argv[1], q);
 
-
+/*
 	freopen(argv[2], "r", stdin);
 	//freopen(argv[3], "w", stdout);
 
@@ -35,25 +35,21 @@ int main(int argc, char **argv)
 	//fclose(stdout);
 
 	cout << "alltime : " << clock() - st << endl;
+*/
 
-/*
-	searcher.createIndex(argv[1], q);
-	searcher.searchJaccard("query", jaccardThreshold, resultJaccard);
-	searcher.searchED("abcabcabc", edThreshold, resultED);
-	searcher.searchED("abcabcabc", edThreshold, resultED);
-	searcher.searchED("abcabcabc", edThreshold, resultED);
-	searcher.searchED("abcabcabc", edThreshold, resultED);
+//	searcher.createIndex(argv[1], q);
+	//searcher.searchJaccard("query", jaccardThreshold, resultJaccard);
 
-	cout << "resultED : " << endl;
+//	cout << "resultED : " << endl;
 
-	for(auto result : resultED)
-		cout << result.first << " " << result.second << endl;
+//	for(auto result : resultED)
+//		cout << result.first << " " << result.second << endl;
 
 	cout << "resultJaccard :" << endl;
 
 	for(auto result : resultJaccard)
 		cout << result.first << " " << result.second << endl;
-*/
+
 	return 0;
 }
 
